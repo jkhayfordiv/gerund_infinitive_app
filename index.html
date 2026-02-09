@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verb Pattern Trainer</title>
+    <title>Verb Pattern Trainer | EAP Practice</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -17,13 +17,13 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 text-slate-800">
 
     <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         <!-- Header -->
         <div class="bg-slate-800 p-6 text-white text-center">
-            <h1 class="text-2xl font-bold">Verb Pattern Practice ✍️</h1>
-            <p class="text-slate-400 text-sm mt-1">Randomized EAP Workshop</p>
+            <h1 class="text-2xl font-bold italic">Action + Action Trainer ✍️</h1>
+            <p class="text-slate-400 text-sm mt-1">Don't just use a noun—follow the verb with another action!</p>
         </div>
 
         <div class="p-6">
@@ -34,22 +34,25 @@
 
             <!-- Question Area -->
             <div id="game-container">
-                <div class="mb-6">
+                <div class="mb-4">
                     <span id="category-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 inline-block"></span>
-                    <h2 class="text-xl font-semibold text-slate-800">
-                        Write a sentence using: <span id="target-verb" class="text-blue-600 underline underline-offset-4"></span>
+                    <h2 class="text-xl font-semibold">
+                        Use <span id="target-verb" class="text-blue-600 underline underline-offset-4"></span> + <span class="text-orange-600 font-bold">Another Action</span>
                     </h2>
-                    <p id="prompt-hint" class="text-slate-500 italic mt-2 text-sm"></p>
+                    <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <p class="text-xs font-bold text-blue-800 uppercase mb-1">Instruction:</p>
+                        <p id="prompt-hint" class="text-sm text-blue-900"></p>
+                    </div>
                 </div>
 
                 <textarea id="user-input" 
                     class="w-full p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none h-32 text-lg"
-                    placeholder="Type your sentence here..."></textarea>
+                    placeholder="Example: I enjoy studying English..."></textarea>
 
                 <!-- Feedback Area -->
                 <div id="feedback-box" class="hidden mt-4 p-4 rounded-xl border-2 animate-pop">
                     <div class="flex items-start">
-                        <div id="feedback-icon" class="mr-3 mt-1"></div>
+                        <div id="feedback-icon" class="mr-3 mt-1 text-2xl"></div>
                         <div>
                             <p id="feedback-text" class="font-bold text-lg"></p>
                             <p id="explanation-text" class="text-sm opacity-90"></p>
@@ -68,7 +71,7 @@
                     </button>
 
                     <button id="reset-current-btn" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-3 px-4 rounded-xl transition-all">
-                        Clear & Restart
+                        Clear text
                     </button>
                     
                     <button id="retry-btn" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl transition-all transform active:scale-95">
@@ -84,90 +87,73 @@
                     <p id="score-correct" class="text-xl font-bold text-green-600">0</p>
                 </div>
                 <div>
-                    <p class="text-xs text-slate-400 uppercase font-bold tracking-tighter">Progress</p>
+                    <p class="text-xs text-slate-400 uppercase font-bold tracking-tighter">Verb</p>
                     <p id="current-count" class="text-xl font-bold text-slate-700">1 / 10</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Reference Toggle -->
+    <!-- Reference -->
     <div class="max-w-2xl mx-auto mt-6 text-center">
         <button onclick="toggleReference()" class="text-slate-400 hover:text-slate-600 text-xs uppercase font-bold tracking-widest">
-            Toggle Grammar Reference
+            Toggle Grammar Help
         </button>
         <div id="ref-table" class="hidden mt-4 text-left bg-white p-6 rounded-xl shadow-inner border border-slate-200 text-sm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h4 class="font-bold text-green-700 mb-1">Gerund Only (-ing)</h4>
-                    <p class="text-slate-600">enjoy, avoid, consider, finish, quit, suggest, miss, keep, mind, postpone, risk, admit, deny, mention, imagine, appreciate, recommend, resist</p>
+                    <p class="text-slate-500 text-xs leading-relaxed">enjoy, avoid, consider, finish, quit, suggest, miss, keep, mind, postpone, risk, admit, deny, imagine, appreciate, recommend, resist</p>
                 </div>
                 <div>
                     <h4 class="font-bold text-blue-700 mb-1">Infinitive Only (to...)</h4>
-                    <p class="text-slate-600">hope, decide, plan, promise, agree, offer, refuse, wait, want, need, learn, fail, seem, appear, deserve, pretend, tend, afford</p>
+                    <p class="text-slate-500 text-xs leading-relaxed">hope, decide, plan, promise, agree, offer, refuse, wait, want, need, learn, fail, seem, appear, deserve, pretend, tend, afford</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        /**
+         * VERB DATABASE
+         * We now explicitly define allowed inflections to avoid "tryed" errors.
+         */
         const fullVerbPool = [
             // GERUND ONLY
-            { verb: 'enjoy', type: 'gerund', hint: 'Think about a weekend hobby.' },
-            { verb: 'avoid', type: 'gerund', hint: 'Think about something unhealthy.' },
-            { verb: 'consider', type: 'gerund', hint: 'Thinking about a new possibility.' },
-            { verb: 'finish', type: 'gerund', hint: 'Talk about completing a task.' },
-            { verb: 'quit', type: 'gerund', hint: 'Giving up a bad habit.' },
-            { verb: 'suggest', type: 'gerund', hint: 'Recommending an action to someone.' },
-            { verb: 'miss', type: 'gerund', hint: 'Something you miss from your home country.' },
-            { verb: 'keep', type: 'gerund', hint: 'Continuing to do something.' },
-            { verb: 'mind', type: 'gerund', hint: 'Used in questions/negatives (Do you mind...?)' },
-            { verb: 'postpone', type: 'gerund', hint: 'Delaying an event.' },
-            { verb: 'risk', type: 'gerund', hint: 'Doing something dangerous.' },
-            { verb: 'admit', type: 'gerund', hint: 'Saying you did something wrong.' },
-            { verb: 'deny', type: 'gerund', hint: 'Saying you did NOT do something.' },
-            { verb: 'imagine', type: 'gerund', hint: 'Picture a future scenario.' },
-            { verb: 'appreciate', type: 'gerund', hint: 'Being thankful for an action.' },
-            { verb: 'recommend', type: 'gerund', hint: 'Give advice on a good action.' },
-            { verb: 'resist', type: 'gerund', hint: 'Try not to do something tempting.' },
-
+            { verb: 'enjoy', type: 'gerund', inflections: ['enjoy', 'enjoys', 'enjoyed', 'enjoying'] },
+            { verb: 'avoid', type: 'gerund', inflections: ['avoid', 'avoids', 'avoided', 'avoiding'] },
+            { verb: 'finish', type: 'gerund', inflections: ['finish', 'finishes', 'finished', 'finishing'] },
+            { verb: 'quit', type: 'gerund', inflections: ['quit', 'quits', 'quitting'] },
+            { verb: 'suggest', type: 'gerund', inflections: ['suggest', 'suggests', 'suggested', 'suggesting'] },
+            { verb: 'keep', type: 'gerund', inflections: ['keep', 'keeps', 'kept', 'keeping'] },
+            { verb: 'consider', type: 'gerund', inflections: ['consider', 'considers', 'considered', 'considering'] },
+            { verb: 'mind', type: 'gerund', inflections: ['mind', 'minds', 'minded', 'minding'] },
+            { verb: 'imagine', type: 'gerund', inflections: ['imagine', 'imagines', 'imagined', 'imagining'] },
+            
             // INFINITIVE ONLY
-            { verb: 'hope', type: 'infinitive', hint: 'A wish for the future.' },
-            { verb: 'decide', type: 'infinitive', hint: 'A choice you made recently.' },
-            { verb: 'plan', type: 'infinitive', hint: 'Arrangements for your next vacation.' },
-            { verb: 'promise', type: 'infinitive', hint: 'A commitment to a friend.' },
-            { verb: 'agree', type: 'infinitive', hint: 'Consenting to a request.' },
-            { verb: 'offer', type: 'infinitive', hint: 'Volunteering to help someone.' },
-            { verb: 'refuse', type: 'infinitive', hint: 'Saying no to an invitation.' },
-            { verb: 'wait', type: 'infinitive', hint: 'Anticipating an event.' },
-            { verb: 'want', type: 'infinitive', hint: 'A basic desire.' },
-            { verb: 'need', type: 'infinitive', hint: 'A requirement for school.' },
-            { verb: 'learn', type: 'infinitive', hint: 'Acquiring a new skill.' },
-            { verb: 'fail', type: 'infinitive', hint: 'Not succeeding in a task.' },
-            { verb: 'seem', type: 'infinitive', hint: 'Giving an impression.' },
-            { verb: 'appear', type: 'infinitive', hint: 'Describing how someone looks.' },
-            { verb: 'deserve', type: 'infinitive', hint: 'Being worthy of something.' },
-            { verb: 'pretend', type: 'infinitive', hint: 'Acting like something is true.' },
-            { verb: 'tend', type: 'infinitive', hint: 'Something that happens usually.' },
-            { verb: 'afford', type: 'infinitive', hint: 'Having enough money for an action.' },
-
-            // BOTH (Same meaning)
-            { verb: 'like', type: 'both', hint: 'A general preference.' },
-            { verb: 'love', type: 'both', hint: 'A strong preference.' },
-            { verb: 'hate', type: 'both', hint: 'A strong dislike.' },
-            { verb: 'start', type: 'both', hint: 'Beginning an action.' },
-            { verb: 'continue', type: 'both', hint: 'Keeping on with a task.' },
-
-            // TRICKY (Change meaning)
-            { verb: 'stop', type: 'tricky', hint: 'Quit a habit vs. Pause to do something.' },
-            { verb: 'remember', type: 'tricky', hint: 'A memory of the past vs. A task for the future.' },
-            { verb: 'forget', type: 'tricky', hint: 'Losing a memory vs. Failing to do a task.' },
-            { verb: 'try', type: 'tricky', hint: 'Attempting something difficult vs. Experimenting.' },
-            { verb: 'regret', type: 'tricky', hint: 'Feeling sorry for the past vs. Telling bad news.' }
+            { verb: 'hope', type: 'infinitive', inflections: ['hope', 'hopes', 'hoped', 'hoping'] },
+            { verb: 'decide', type: 'infinitive', inflections: ['decide', 'decides', 'decided', 'deciding'] },
+            { verb: 'plan', type: 'infinitive', inflections: ['plan', 'plans', 'planned', 'planning'] },
+            { verb: 'promise', type: 'infinitive', inflections: ['promise', 'promises', 'promised', 'promising'] },
+            { verb: 'refuse', type: 'infinitive', inflections: ['refuse', 'refuses', 'refused', 'refusing'] },
+            { verb: 'wait', type: 'infinitive', inflections: ['wait', 'waits', 'waited', 'waiting'] },
+            { verb: 'learn', type: 'infinitive', inflections: ['learn', 'learns', 'learned', 'learnt', 'learning'] },
+            { verb: 'afford', type: 'infinitive', inflections: ['afford', 'affords', 'afforded', 'affording'] },
+            
+            // BOTH
+            { verb: 'start', type: 'both', inflections: ['start', 'starts', 'started', 'starting'] },
+            { verb: 'like', type: 'both', inflections: ['like', 'likes', 'liked', 'liking'] },
+            { verb: 'love', type: 'both', inflections: ['love', 'loves', 'loved', 'loving'] },
+            { verb: 'hate', type: 'both', inflections: ['hate', 'hates', 'hated', 'hating'] },
+            
+            // TRICKY (Proper irregular handling)
+            { verb: 'stop', type: 'tricky', inflections: ['stop', 'stops', 'stopped', 'stopping'] },
+            { verb: 'try', type: 'tricky', inflections: ['try', 'tries', 'tried', 'trying'] },
+            { verb: 'remember', type: 'tricky', inflections: ['remember', 'remembers', 'remembered', 'remembering'] },
+            { verb: 'forget', type: 'tricky', inflections: ['forget', 'forgets', 'forgot', 'forgotten', 'forgetting'] }
         ];
 
-        // SESSION SETTINGS
-        const SESSION_LENGTH = 10; 
+        const SESSION_LENGTH = 10;
         let currentSessionPool = [];
         let currentIndex = 0;
         let score = 0;
@@ -190,7 +176,6 @@
             progressBar: document.getElementById('progress-bar')
         };
 
-        // Fisher-Yates Shuffle
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -200,8 +185,7 @@
         }
 
         function startNewSession() {
-            const shuffled = shuffle([...fullVerbPool]);
-            currentSessionPool = shuffled.slice(0, SESSION_LENGTH);
+            currentSessionPool = shuffle([...fullVerbPool]).slice(0, SESSION_LENGTH);
             currentIndex = 0;
             score = 0;
             ui.scoreLabel.innerText = "0";
@@ -211,7 +195,15 @@
         function initQuestion() {
             const data = currentSessionPool[currentIndex];
             ui.targetVerb.innerText = data.verb;
-            ui.promptHint.innerText = data.hint;
+            
+            // Build the specific instruction based on type
+            let instr = "";
+            if (data.type === 'gerund') instr = `You must follow "${data.verb}" with an -ING action (e.g., "${data.verb} swimming").`;
+            else if (data.type === 'infinitive') instr = `You must follow "${data.verb}" with a TO + VERB action (e.g., "${data.verb} to swim").`;
+            else if (data.type === 'both') instr = `You can use either -ING or TO... after "${data.verb}".`;
+            else if (data.type === 'tricky') instr = `Be careful! The meaning changes depending on if you use -ING or TO...`;
+            
+            ui.promptHint.innerText = instr;
             ui.userInput.value = '';
             ui.userInput.disabled = false;
             ui.userInput.className = "w-full p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none h-32 text-lg";
@@ -221,14 +213,9 @@
             ui.retryBtn.classList.add('hidden');
             ui.resetBtn.classList.add('hidden');
             
-            const colors = {
-                gerund: 'bg-green-100 text-green-700',
-                infinitive: 'bg-blue-100 text-blue-700',
-                tricky: 'bg-red-100 text-red-700',
-                both: 'bg-orange-100 text-orange-700'
-            };
+            const colors = { gerund: 'bg-green-100 text-green-700', infinitive: 'bg-blue-100 text-blue-700', tricky: 'bg-red-100 text-red-700', both: 'bg-orange-100 text-orange-700' };
             ui.badge.className = `px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 inline-block ${colors[data.type]}`;
-            ui.badge.innerText = data.type === 'tricky' ? '⚠️ Check Meaning' : data.type;
+            ui.badge.innerText = data.type;
             
             ui.countLabel.innerText = `${currentIndex + 1} / ${SESSION_LENGTH}`;
             ui.progressBar.style.width = `${(currentIndex / SESSION_LENGTH) * 100}%`;
@@ -238,44 +225,78 @@
         function checkAnswer() {
             const text = ui.userInput.value.trim().toLowerCase();
             const data = currentSessionPool[currentIndex];
-            const verb = data.verb.toLowerCase();
+            
+            // 1. Find which inflection of the verb the student used
+            let usedVerbForm = data.inflections.find(form => {
+                const regex = new RegExp(`\\b${form}\\b`, 'i');
+                return regex.test(text);
+            });
 
-            if (!text.includes(verb)) {
-                showFeedback('error', 'Missing Verb', `You must use the word "${data.verb}" (or its variations like ${verb}s, ${verb}ed, ${verb}ing).`);
+            if (!usedVerbForm) {
+                showFeedback('error', 'Verb Not Found', `Make sure you use a correct form of "${data.verb}" (e.g., ${data.inflections.join(', ')}).`);
                 return;
             }
 
-            const regex = new RegExp(`${verb}(?:s|ed|ing)?\\s+([a-z'\\-]+)`, 'i');
-            const match = text.match(regex);
+            // 2. Identify what comes immediately after that verb form
+            // Looks for: verb + space + (word) OR verb + space + to + space + (word)
+            const followRegex = new RegExp(`${usedVerbForm}\\s+([a-z'\\-]+)`, 'i');
+            const match = text.match(followRegex);
 
-            const isGerund = match ? match[1].endsWith('ing') : false;
-            const isInfinitive = text.includes(`${verb} to `) || text.includes(`${verb}s to `) || text.includes(`${verb}ed to `) || text.includes(`${verb}ing to `);
+            if (!match) {
+                showFeedback('error', 'Incomplete', `What is the second action? You need to follow "${usedVerbForm}" with another verb.`);
+                return;
+            }
+
+            const nextWord = match[1];
+            const isTo = nextWord === 'to';
+            
+            // If the next word is 'to', we look for the word AFTER 'to'
+            let actionWord = nextWord;
+            if (isTo) {
+                const toRegex = new RegExp(`${usedVerbForm}\\s+to\\s+([a-z'\\-]+)`, 'i');
+                const toMatch = text.match(toRegex);
+                if (toMatch) actionWord = toMatch[1];
+                else {
+                    showFeedback('error', 'Missing Action', `You used "to", but didn't provide a verb after it.`);
+                    return;
+                }
+            }
+
+            // VALIDATION LOGIC
+            const hasIng = actionWord.endsWith('ing');
+            const hasTo = isTo;
+
+            // Reject simple nouns/prepositions that are not actions
+            const commonNouns = ['the', 'my', 'his', 'her', 'a', 'an', 'some', 'this', 'that', 'pizza', 'sushi', 'homework', 'school', 'home', 'at', 'in', 'on', 'with'];
+            if (!hasIng && !hasTo && commonNouns.includes(actionWord)) {
+                showFeedback('error', 'Noun Found', `You used a noun ("${actionWord}"). You must use another ACTION (verb).`);
+                return;
+            }
 
             let isCorrect = false;
-            let msg = "";
+            let feedback = "";
 
             if (data.type === 'gerund') {
-                isCorrect = isGerund;
-                msg = isCorrect ? "Excellent! Always follow this verb with a gerund." : `Oops! "${data.verb}" must be followed by -ing (e.g., ${data.verb} studying).`;
+                isCorrect = hasIng && !hasTo;
+                feedback = isCorrect ? "Excellent!" : `Incorrect. "${data.verb}" requires a gerund (-ing).`;
             } else if (data.type === 'infinitive') {
-                isCorrect = isInfinitive;
-                msg = isCorrect ? "Great! You correctly used 'to' + verb." : `Wait! "${data.verb}" needs an infinitive (e.g., ${data.verb} to study).`;
-            } else if (data.type === 'tricky' || data.type === 'both') {
-                isCorrect = isGerund || isInfinitive;
-                msg = data.type === 'tricky' ? "Grammar is fine, but check the meaning!" : "Good! Both forms are acceptable here.";
+                isCorrect = hasTo;
+                feedback = isCorrect ? "Perfect!" : `Incorrect. "${data.verb}" requires an infinitive (to...).`;
+            } else {
+                // Both/Tricky
+                isCorrect = hasIng || hasTo;
+                feedback = isCorrect ? "Great!" : "Try using either -ing or to...";
             }
 
             if (isCorrect) {
                 score++;
                 ui.scoreLabel.innerText = score;
-                showFeedback('success', "Correct!", msg);
+                showFeedback('success', "Correct!", feedback);
                 ui.userInput.disabled = true;
                 ui.checkBtn.classList.add('hidden');
-                ui.retryBtn.classList.add('hidden');
-                ui.resetBtn.classList.add('hidden');
                 ui.nextBtn.classList.remove('hidden');
             } else {
-                showFeedback('error', "Incorrect Pattern", msg);
+                showFeedback('error', "Grammar Error", feedback);
                 ui.checkBtn.classList.add('hidden');
                 ui.retryBtn.classList.remove('hidden');
                 ui.resetBtn.classList.remove('hidden');
@@ -286,15 +307,9 @@
             ui.feedbackBox.classList.remove('hidden');
             ui.feedbackText.innerText = title;
             ui.explanationText.innerText = msg;
-            if (type === 'success') {
-                ui.feedbackBox.className = "mt-4 p-4 rounded-xl border-2 correct text-green-800 animate-pop";
-                ui.userInput.classList.add('correct');
-                ui.feedbackIcon.innerHTML = '✅';
-            } else {
-                ui.feedbackBox.className = "mt-4 p-4 rounded-xl border-2 incorrect text-red-800 animate-pop";
-                ui.userInput.classList.add('incorrect');
-                ui.feedbackIcon.innerHTML = '❌';
-            }
+            ui.feedbackBox.className = `mt-4 p-4 rounded-xl border-2 animate-pop ${type === 'success' ? 'correct text-green-800' : 'incorrect text-red-800'}`;
+            ui.userInput.classList.add(type === 'success' ? 'correct' : 'incorrect');
+            ui.feedbackIcon.innerHTML = type === 'success' ? '✅' : '❌';
         }
 
         function handleRetry() {
@@ -306,52 +321,28 @@
             ui.userInput.focus();
         }
 
-        function resetCurrent() {
-            ui.userInput.value = '';
-            handleRetry();
-        }
-
         function nextQuestion() {
             currentIndex++;
-            if (currentIndex < SESSION_LENGTH) {
-                initQuestion();
-            } else {
-                finishGame();
-            }
+            if (currentIndex < SESSION_LENGTH) initQuestion();
+            else finishGame();
         }
 
         function finishGame() {
-            ui.progressBar.style.width = "100%";
-            const percent = Math.round((score / SESSION_LENGTH) * 100);
-            let message = percent >= 80 ? "Fantastic Work!" : percent >= 50 ? "Good Job!" : "Keep Practicing!";
-            
             document.getElementById('game-container').innerHTML = `
-                <div class="text-center py-10 animate-pop">
-                    <div class="text-6xl mb-4">${percent >= 80 ? '🏆' : '📚'}</div>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">${message}</h2>
-                    <p class="text-slate-500 mb-8 text-lg">Score: ${score} / ${SESSION_LENGTH} (${percent}%)</p>
-                    <button onclick="location.reload()" class="bg-blue-600 text-white px-10 py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all">Start New Session</button>
+                <div class="text-center py-10">
+                    <h2 class="text-3xl font-bold mb-2">Session Over! 🎉</h2>
+                    <p class="mb-8">Final Score: ${score} / ${SESSION_LENGTH}</p>
+                    <button onclick="location.reload()" class="bg-blue-600 text-white px-10 py-4 rounded-xl font-bold shadow-lg">New Session</button>
                 </div>
             `;
         }
 
-        function toggleReference() {
-            document.getElementById('ref-table').classList.toggle('hidden');
-        }
+        function toggleReference() { document.getElementById('ref-table').classList.toggle('hidden'); }
 
         ui.checkBtn.addEventListener('click', checkAnswer);
         ui.nextBtn.addEventListener('click', nextQuestion);
         ui.retryBtn.addEventListener('click', handleRetry);
-        ui.resetBtn.addEventListener('click', resetCurrent);
-
-        ui.userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!ui.checkBtn.classList.contains('hidden')) checkAnswer();
-                else if (!ui.nextBtn.classList.contains('hidden')) nextQuestion();
-                else if (!ui.retryBtn.classList.contains('hidden')) handleRetry();
-            }
-        });
+        ui.resetBtn.addEventListener('click', () => { ui.userInput.value = ''; handleRetry(); });
 
         startNewSession();
     </script>
